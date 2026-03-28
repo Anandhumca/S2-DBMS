@@ -1,0 +1,97 @@
+CREATE TABLE student_marks (
+    ->     student_id INT PRIMARY KEY,
+    ->     student_name VARCHAR(100),
+    ->     sub1 INT,
+    ->     sub2 INT,
+    ->     sub3 INT,
+    ->     sub4 INT,
+    ->     sub5 INT,
+    ->     total INT,
+    ->     per_marks DECIMAL(5,2),
+    ->     grade VARCHAR(20)
+    -> );
+Query OK, 0 rows affected (1.38 sec)
+
+mysql> INSERT INTO student_marks (student_id, student_name, sub1, sub2, sub3, sub4, sub5) VALUES
+    -> (1, 'John', 85, 90, 78, 92, 88),
+    -> (2, 'Alice', 65, 70, 72, 68, 66),
+    -> (3, 'Bob', 35, 42, 40, 38, 45),
+    -> (4, 'Emma', 95, 98, 92, 94, 96),
+    -> (5, 'David', 55, 60, 58, 62, 59);
+Query OK, 5 rows affected (0.10 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE TRIGGER CalculateStudentDetails
+    -> BEFORE UPDATE ON student_marks
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     -- Calculate total marks
+    ->     SET NEW.total = NEW.sub1 + NEW.sub2 + NEW.sub3 + NEW.sub4 + NEW.sub5;
+    -> 
+    ->     -- Calculate percentage of marks
+    ->     SET NEW.per_marks = NEW.total / 5;
+    -> 
+    ->     -- Determine grade based on percentage
+    ->     IF NEW.per_marks >= 90 THEN
+    ->         SET NEW.grade = 'EXCELLENT';
+    ->     ELSEIF NEW.per_marks >= 75 THEN
+    ->         SET NEW.grade = 'VERY GOOD';
+    ->     ELSEIF NEW.per_marks >= 60 THEN
+    ->         SET NEW.grade = 'GOOD';
+    ->     ELSEIF NEW.per_marks >= 40 THEN
+    ->         SET NEW.grade = 'AVERAGE';
+    ->     ELSE
+    ->         SET NEW.grade = 'NOT PROMOTED';
+    ->     END IF;
+    -> END //
+Query OK, 0 rows affected (0.15 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> select*from student_marks;
++------------+--------------+------+------+------+------+------+-------+-----------+-------+
+| student_id | student_name | sub1 | sub2 | sub3 | sub4 | sub5 | total | per_marks | grade |
++------------+--------------+------+------+------+------+------+-------+-----------+-------+
+|          1 | John         |   85 |   90 |   78 |   92 |   88 |  NULL |      NULL | NULL  |
+|          2 | Alice        |   65 |   70 |   72 |   68 |   66 |  NULL |      NULL | NULL  |
+|          3 | Bob          |   35 |   42 |   40 |   38 |   45 |  NULL |      NULL | NULL  |
+|          4 | Emma         |   95 |   98 |   92 |   94 |   96 |  NULL |      NULL | NULL  |
+|          5 | David        |   55 |   60 |   58 |   62 |   59 |  NULL |      NULL | NULL  |
++------------+--------------+------+------+------+------+------+-------+-----------+-------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE student_marks
+    -> SET sub1 = 80, sub2 = 85, sub3 = 90, sub4 = 75, sub5 = 85
+    -> WHERE student_id = 1;
+Query OK, 1 row affected (0.08 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select*from student_marks;
++------------+--------------+------+------+------+------+------+-------+-----------+-----------+
+| student_id | student_name | sub1 | sub2 | sub3 | sub4 | sub5 | total | per_marks | grade     |
++------------+--------------+------+------+------+------+------+-------+-----------+-----------+
+|          1 | John         |   80 |   85 |   90 |   75 |   85 |   415 |     83.00 | VERY GOOD |
+|          2 | Alice        |   65 |   70 |   72 |   68 |   66 |  NULL |      NULL | NULL      |
+|          3 | Bob          |   35 |   42 |   40 |   38 |   45 |  NULL |      NULL | NULL      |
+|          4 | Emma         |   95 |   98 |   92 |   94 |   96 |  NULL |      NULL | NULL      |
+|          5 | David        |   55 |   60 |   58 |   62 |   59 |  NULL |      NULL | NULL      |
++------------+--------------+------+------+------+------+------+-------+-----------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE student_marks SET sub1 = 90, sub2 = 95, sub3 = 90, sub4 = 93, sub5 = 89 WHERE student_id = 2;
+Query OK, 1 row affected (0.10 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select*from student_marks;
++------------+--------------+------+------+------+------+------+-------+-----------+-----------+
+| student_id | student_name | sub1 | sub2 | sub3 | sub4 | sub5 | total | per_marks | grade     |
++------------+--------------+------+------+------+------+------+-------+-----------+-----------+
+|          1 | John         |   80 |   85 |   90 |   75 |   85 |   415 |     83.00 | VERY GOOD |
+|          2 | Alice        |   90 |   95 |   90 |   93 |   89 |   457 |     91.40 | EXCELLENT |
+|          3 | Bob          |   35 |   42 |   40 |   38 |   45 |  NULL |      NULL | NULL      |
+|          4 | Emma         |   95 |   98 |   92 |   94 |   96 |  NULL |      NULL | NULL      |
+|          5 | David        |   55 |   60 |   58 |   62 |   59 |  NULL |      NULL | NULL      |
++------------+--------------+------+------+------+------+------+-------+-----------+-----------+
+

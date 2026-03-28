@@ -1,0 +1,99 @@
+DELIMITER //
+mysql> 
+mysql> CREATE PROCEDURE CalculateElectricityBill()
+    -> BEGIN
+    ->     DECLARE customer_id_val INT;
+    ->     DECLARE name_val VARCHAR(100);
+    ->     DECLARE pre_reading_val INT;
+    ->     DECLARE cur_reading_val INT;
+    ->     DECLARE unit_val INT;
+    ->     DECLARE amount_val DECIMAL(10,2);
+    ->     
+    ->     DECLARE done INT DEFAULT FALSE;
+    ->     
+    ->     -- Cursor for Bill table
+    ->     DECLARE bill_cursor CURSOR FOR
+    ->         SELECT customer_id, name, pre_reading, cur_reading
+    ->         FROM Bill;
+    ->     
+    ->     -- Handler for end of cursor
+    ->     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    ->     
+    ->     OPEN bill_cursor;
+    ->     
+    ->     bill_loop: LOOP
+    ->         FETCH bill_cursor INTO customer_id_val, name_val, pre_reading_val, cur_reading_val;
+    ->         
+    ->         IF done THEN
+    ->             LEAVE bill_loop;
+    ->         END IF;
+    ->         
+    ->         -- Calculate units consumed
+    ->         SET unit_val = cur_reading_val - pre_reading_val;
+    ->         
+    ->         -- Calculate amount based on slab rates
+    ->         IF unit_val <= 100 THEN
+    ->             SET amount_val = unit_val * 2.00;
+    ->         ELSEIF unit_val <= 200 THEN
+    ->             SET amount_val = 100 * 2.00 + (unit_val - 100) * 2.50;
+    ->         ELSEIF unit_val <= 300 THEN
+    ->             SET amount_val = 100 * 2.00 + 100 * 2.50 + (unit_val - 200) * 3.00;
+    ->         ELSE
+    ->             SET amount_val = 100 * 2.00 + 100 * 2.50 + 100 * 3.00 + (unit_val - 300) * 4.00;
+    ->         END IF;
+    ->         
+    ->         -- Update the amount in the Bill table
+    ->         UPDATE Bill
+    ->         SET amount = amount_val
+    ->         WHERE customer_id = customer_id_val;
+    ->         
+    ->     END LOOP;
+    ->     
+    ->     CLOSE bill_cursor;
+    -> END //
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> CREATE TABLE Bill (
+    ->     customer_id INT PRIMARY KEY,
+    ->     name VARCHAR(100),
+    ->     pre_reading INT,
+    ->     cur_reading INT,
+    ->     amount DECIMAL(10,2) DEFAULT 0.00
+    -> );
+Query OK, 0 rows affected (1.06 sec)
+
+mysql> INSERT INTO Bill (customer_id, name, pre_reading, cur_reading, amount) VALUES
+    -> (1, 'John', 1200, 1250, 0),
+    -> (2, 'Alice', 500, 650, 0),
+    -> (3, 'Bob', 300, 650, 0),
+    -> (4, 'Emma', 1000, 1400, 0);
+Query OK, 4 rows affected (0.10 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Bill;
++-------------+-------+-------------+-------------+--------+
+| customer_id | name  | pre_reading | cur_reading | amount |
++-------------+-------+-------------+-------------+--------+
+|           1 | John  |        1200 |        1250 |   0.00 |
+|           2 | Alice |         500 |         650 |   0.00 |
+|           3 | Bob   |         300 |         650 |   0.00 |
+|           4 | Emma  |        1000 |        1400 |   0.00 |
++-------------+-------+-------------+-------------+--------+
+4 rows in set (0.00 sec)
+
+mysql> CALL CalculateElectricityBill();
+Query OK, 0 rows affected (0.41 sec)
+
+mysql> SELECT * FROM Bill;
++-------------+-------+-------------+-------------+---------+
+| customer_id | name  | pre_reading | cur_reading | amount  |
++-------------+-------+-------------+-------------+---------+
+|           1 | John  |        1200 |        1250 |  100.00 |
+|           2 | Alice |         500 |         650 |  325.00 |
+|           3 | Bob   |         300 |         650 |  950.00 |
+|           4 | Emma  |        1000 |        1400 | 1150.00 |
++-------------+-------+-------------+-------------+---------+
+4 rows in set (0.00 sec)
+

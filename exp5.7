@@ -1,0 +1,67 @@
+ CREATE TABLE Employee (
+    ->     employee_id INT PRIMARY KEY,
+    ->     name VARCHAR(100),
+    ->     department VARCHAR(50),
+    ->     salary DECIMAL(10,2)
+    -> );
+Query OK, 0 rows affected (0.56 sec)
+
+mysql> INSERT INTO Employee (employee_id, name, department, salary) VALUES
+    -> (1, 'John', 'HR', 50000),
+    -> (2, 'Alice', 'IT', 60000),
+    -> (3, 'Bob', 'Finance', 55000);
+Query OK, 3 rows affected (0.13 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> select*from Employee;
++-------------+-------+------------+----------+
+| employee_id | name  | department | salary   |
++-------------+-------+------------+----------+
+|           1 | John  | HR         | 50000.00 |
+|           2 | Alice | IT         | 60000.00 |
+|           3 | Bob   | Finance    | 55000.00 |
++-------------+-------+------------+----------+
+3 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Emp_history (
+    ->     employee_id INT,
+    ->     name VARCHAR(100),
+    ->     department VARCHAR(50),
+    ->     salary DECIMAL(10,2),
+    ->     Date_of_deletion DATETIME DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.92 sec)
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE TRIGGER MoveDeletedEmployeeToHistory
+    -> AFTER DELETE ON Employee
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO Emp_history (employee_id, name, department, salary, Date_of_deletion)
+    ->     VALUES (OLD.employee_id, OLD.name, OLD.department, OLD.salary, NOW());
+    -> END //
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> DELETE FROM Employee WHERE employee_id = 2;
+Query OK, 1 row affected (0.22 sec)
+
+mysql> SELECT * FROM Emp_history;
++-------------+-------+------------+----------+---------------------+
+| employee_id | name  | department | salary   | Date_of_deletion    |
++-------------+-------+------------+----------+---------------------+
+|           2 | Alice | IT         | 60000.00 | 2026-03-26 14:58:59 |
++-------------+-------+------------+----------+---------------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * FROM Employee;
++-------------+------+------------+----------+
+| employee_id | name | department | salary   |
++-------------+------+------------+----------+
+|           1 | John | HR         | 50000.00 |
+|           3 | Bob  | Finance    | 55000.00 |
++-------------+------+------------+----------+
+2 rows in set (0.00 sec)
+

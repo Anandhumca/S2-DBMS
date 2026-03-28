@@ -1,0 +1,45 @@
+CREATE TABLE emp_details (
+    ->     emp_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     FIRST_NAME VARCHAR(50),
+    ->     LAST_NAME VARCHAR(50),
+    ->     JOB_ID VARCHAR(20)
+    -> );
+Query OK, 0 rows affected (0.61 sec)
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE TRIGGER BeforeInsertEmpDetails
+    -> BEFORE INSERT ON emp_details
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     -- Remove spaces from first and last name
+    ->     SET NEW.FIRST_NAME = TRIM(NEW.FIRST_NAME);
+    ->     SET NEW.LAST_NAME = TRIM(NEW.LAST_NAME);
+    -> 
+    ->     -- Convert JOB_ID to uppercase
+    ->     SET NEW.JOB_ID = UPPER(NEW.JOB_ID);
+    -> END //
+Query OK, 0 rows affected (0.18 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> INSERT INTO emp_details (FIRST_NAME, LAST_NAME, JOB_ID) 
+    -> VALUES 
+    -> ('  Alice  ', '  Johnson  ', 'manager'),
+    -> ('  Bob', 'Brown  ', 'developer');
+Query OK, 2 rows affected (0.11 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO emp_details (FIRST_NAME, LAST_NAME, JOB_ID) 
+    -> VALUES (' Michael ', ' Smith ', 'analyst');
+Query OK, 1 row affected (0.08 sec)
+
+mysql> SELECT * FROM emp_details;
++--------+------------+-----------+-----------+
+| emp_id | FIRST_NAME | LAST_NAME | JOB_ID    |
++--------+------------+-----------+-----------+
+|      1 | Alice      | Johnson   | MANAGER   |
+|      2 | Bob        | Brown     | DEVELOPER |
+|      3 | Michael    | Smith     | ANALYST   |
++--------+------------+-----------+-----------+
+
