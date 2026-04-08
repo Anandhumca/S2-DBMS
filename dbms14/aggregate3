@@ -1,0 +1,6 @@
+db.sales.aggregate([{$group: {_id: '$item',averageAmount: { $avg: {
+... $multiply: ['$quantity', '$price'] } },},},{ $match: { averageAmount: { $gt: 150
+... } } },{ $sort: { averageAmount: 1 } },]);
+{ "_id" : "Mochas", "averageAmount" : 275 }
+{ "_id" : "Lattes", "averageAmount" : 562.5 }
+

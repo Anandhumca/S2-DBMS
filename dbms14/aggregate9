@@ -1,0 +1,6 @@
+db.sales.aggregate([{$group: {_id: '$item',maxQty: { $max: '$quantity' },},},]);
+{ "_id" : "Lattes", "maxQty" : 30 }
+{ "_id" : "Cappuccino", "maxQty" : 20 }
+{ "_id" : "Mochas", "maxQty" : 11 }
+{ "_id" : "Americanos", "maxQty" : 22 }
+

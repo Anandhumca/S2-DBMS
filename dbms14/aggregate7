@@ -1,0 +1,7 @@
+ db.sales.aggregate([{$group: {_id: '$item',totalQty: { $sum: '$quantity' },},},{
+... $sort: { totalQty: -1 } },]);
+{ "_id" : "Americanos", "totalQty" : 70 }
+{ "_id" : "Lattes", "totalQty" : 55 }
+{ "_id" : "Cappuccino", "totalQty" : 49 }
+{ "_id" : "Mochas", "totalQty" : 11 }
+

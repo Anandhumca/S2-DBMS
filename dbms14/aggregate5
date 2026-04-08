@@ -1,0 +1,4 @@
+db.sales.aggregate([{$group: {_id: null,totalQty: { $sum: '$quantity' },},},{
+... $project: { _id: 0 } },]);
+{ "totalQty" : 185 }
+

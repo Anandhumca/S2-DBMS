@@ -1,0 +1,33 @@
+db.sales.aggregate([
+...   {
+...     $group: {
+...       _id: "$item"
+...     }
+...   },
+...   {
+...     $project: {
+...       _id: 0,
+...       item: "$_id"
+...     }
+...   }
+... ])
+{ "item" : "Lattes" }
+{ "item" : "Cappuccino" }
+{ "item" : "Mochas" }
+{ "item" : "Americanos" }
+> db.sales.aggregate([
+...   {
+...     $group: {
+...       _id: null,
+...       maxQty: { $max: "$quantity" }
+...     }
+...   },
+...   {
+...     $project: {
+...       _id: 0,
+...       maxQty: 1
+...     }
+...   }
+... ])
+{ "maxQty" : 30 }
+

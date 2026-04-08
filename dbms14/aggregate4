@@ -1,0 +1,28 @@
+db.sales.aggregate([
+...   {
+...     $group: {
+...       _id: "$item",
+...       itemCount: { $sum: 1 }
+...     }
+...   }
+... ])
+{ "_id" : "Lattes", "itemCount" : 2 }
+{ "_id" : "Cappuccino", "itemCount" : 3 }
+{ "_id" : "Mochas", "itemCount" : 1 }
+{ "_id" : "Americanos", "itemCount" : 4 }
+> db.sales.aggregate([
+...   {
+...     $group: {
+...       _id: "$item",
+...       itemCount: { $sum: 1 }
+...     }
+...   },
+...   {
+...     $match: {
+...       itemCount: { $gt: 2 }
+...     }
+...   }
+... ])
+{ "_id" : "Cappuccino", "itemCount" : 3 }
+{ "_id" : "Americanos", "itemCount" : 4 }
+
